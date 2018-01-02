@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/jofo8948/gget/src/strategy"
+	"github.com/jofo8948/gget/strategy"
 )
 
 // retriever provides the interface for Retrieving a file

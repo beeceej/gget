@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/jofo8948/gget/src/strategy"
+	"github.com/jofo8948/gget/strategy"
 )
 
 const (
