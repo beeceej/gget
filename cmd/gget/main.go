@@ -14,7 +14,7 @@ import (
 	"github.com/jofo8948/gget/strategy"
 )
 
-const workers = 100
+const workers = 500
 
 func main() {
 	var (
