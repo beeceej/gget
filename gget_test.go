@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"net/url"
 	"testing"
-
-	"github.com/jofo8948/gget/strategy"
 )
 
 const (
@@ -22,9 +20,19 @@ type mockRetriever struct {
 }
 
 var mockURL, _ = url.Parse("http://localhost:8080.com")
-
-var ggetExpectError = GGet{URL: nil, Strategy: &strategy.ToStdOut{}, r: &mockRetriever{mockData: nil, mockErr: errors.New("an error")}}
-var ggetExpectData = GGet{URL: mockURL, Strategy: &strategy.ToStdOut{}, r: &mockRetriever{mockData: []byte{0, 1, 1, 1}}}
+var mockErrURL, _ = url.Parse("//x")
+var ggetExpectError = GGet{
+	URLS:     []*url.URL{mockErrURL},
+	Strategy: &ToStdOut{},
+	r:        &mockRetriever{mockData: nil, mockErr: errors.New("an error")},
+	Verbose:  true,
+}
+var ggetExpectData = GGet{
+	URLS:     []*url.URL{mockURL},
+	Strategy: &ToStdOut{},
+	r:        &mockRetriever{mockData: []byte{0, 1, 1, 1}},
+	Verbose:  true,
+}
 
 func (r *mockRetriever) get(u *url.URL) ([]byte, error) {
 	if r.mockErr != nil {
@@ -34,25 +42,20 @@ func (r *mockRetriever) get(u *url.URL) ([]byte, error) {
 }
 
 func TestGGet(t *testing.T) {
-	testGGetExpectError := func() bool {
+	testGGetExpectError := func() {
 		err := ggetExpectError.Execute()
 		if err == nil {
-			return FAIL
+			t.Fail()
 		}
-
-		return PASS
 	}
-	testGGetExpectNoError := func() bool {
+	testGGetExpectNoError := func() {
 		if err := ggetExpectData.Execute(); err != nil {
-			return FAIL
+			t.Fail()
 		}
-		return PASS
 	}
 
-	t1Status := testGGetExpectError()
-	checkTestStatus(t1Status, t)
-	t2Status := testGGetExpectNoError()
-	checkTestStatus(t2Status, t)
+	testGGetExpectError()
+	testGGetExpectNoError()
 }
 
 func TestHttpRetriever(t *testing.T) {
@@ -64,12 +67,6 @@ func TestHttpRetriever(t *testing.T) {
 	if response, err := new(httpRetriever).get(localhostURL); err != nil {
 		t.Fail()
 	} else if !bytes.Equal(response, expectedResponse) {
-		t.Fail()
-	}
-}
-
-func checkTestStatus(status bool, t *testing.T) {
-	if status != PASS {
 		t.Fail()
 	}
 }

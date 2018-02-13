@@ -1,4 +1,4 @@
-package strategy
+package gget
 
 import "log"
 
@@ -10,11 +10,11 @@ type ToStdOut struct {
 }
 
 // Handle is a strategy for printing file contents out to std out
-func (t *ToStdOut) Handle(b []byte) error {
+func (t *ToStdOut) Handle(r result) error {
 	if t.Size != 0 {
-		log.Printf(string(b)[:t.Size])
+		log.Printf(string(r.b)[:t.Size])
 	} else {
-		log.Printf(string(b))
+		log.Printf(string(r.b))
 	}
 
 	return nil
