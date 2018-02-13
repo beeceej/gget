@@ -1,12 +1,4 @@
 language: go
 go:
   - 1.9
-os:
-  - linux
-  - osx
-matrix:
-  fast_finish: true
-install:
-  - go install
-script:
-  - go test
+  
