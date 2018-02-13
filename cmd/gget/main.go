@@ -6,15 +6,10 @@ import (
 	"log"
 	"net/url"
 	"os"
-	"path/filepath"
 	"strings"
-	"sync"
 
-	"github.com/jofo8948/gget/gget"
-	"github.com/jofo8948/gget/strategy"
+	"github.com/jofo8948/gget"
 )
-
-const workers = 500
 
 func main() {
 	var (
@@ -23,50 +18,36 @@ func main() {
 	)
 
 	infile := flag.String("i", "urls.txt", "Use a line-separated file to fetch many files at once.")
+	verbose := flag.Bool("v", false, "enables verbose mode")
 	flag.Parse()
-
 	if f, err = os.Open(*infile); err != nil {
 		log.Fatal(err.Error())
 	}
 	defer f.Close()
 
-	lines := make(chan string, workers*3)
-	wg := new(sync.WaitGroup)
-	wg.Add(workers)
-
-	for i := 0; i < workers; i++ {
-		go func() {
-			parseURL := func(line string) (u *url.URL) {
-				var err error
-				if line == "" {
-					return nil
-				}
-				u, err = url.Parse(strings.TrimSpace(line))
-				if err != nil {
-					log.Printf("%s is not a valid URL.", line)
-					return nil
-				}
-				return u
-			}
-			if url := parseURL(<-lines); url != nil {
-				dst := filepath.Join(url.Host, filepath.Join(strings.Split(url.Path, "/")...))
-				download(gget.Default(url, strategy.ToFile(dst)))
-			}
-			wg.Done()
-		}()
-	}
-
 	sc := bufio.NewScanner(f)
-	for sc.Scan() {
-		lines <- sc.Text()
-	}
 
-	close(lines)
-	wg.Wait()
+	var urls []*url.URL
+	for sc.Scan() {
+		if u, ok := parseURL(sc.Text()); !ok {
+			log.Printf("Couldn't parse URL %s", u)
+		} else {
+			urls = append(urls, u)
+		}
+	}
+	g := gget.Default(urls, &gget.ToFile{Dst: gget.URLBasedPath}, *verbose)
+	if err := g.Execute(); err != nil {
+		log.Printf(err.Error())
+	}
 }
 
-func download(g *gget.GGet) {
-	if err := g.Execute(); err != nil {
-		log.Printf("error retrieving file from URI %v, error %s", g.URL, err.Error())
+func parseURL(line string) (u *url.URL, b bool) {
+	var err error
+	if line == "" {
+		return nil, false
 	}
+	if u, err = url.Parse(strings.TrimSpace(line)); err != nil {
+		return nil, false
+	}
+	return u, true
 }
