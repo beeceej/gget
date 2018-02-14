@@ -9,11 +9,6 @@ import (
 	"testing"
 )
 
-const (
-	PASS = true
-	FAIL = false
-)
-
 type mockRetriever struct {
 	mockData []byte
 	mockErr  error
