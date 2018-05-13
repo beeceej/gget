@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/beeceej/gget.svg?branch=master)](https://travis-ci.org/beeceej/gget)
+
 # gget
 GGet is a library which mimics the functionality of wget.
 GGet will read in a file, download and save all resources to the filesystem.
